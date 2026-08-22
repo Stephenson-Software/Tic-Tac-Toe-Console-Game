@@ -53,7 +53,8 @@ The game ends as soon as a line of three is completed or the board fills, and on
   outside 1-3 ends the game with an unhandled exception
   ([#4](https://github.com/Stephenson-Software/Tic-Tac-Toe-Console-Game/issues/4)).
 - No quit command is offered; a game in progress is left only by interrupting the
-  process.
+  process. Reaching end of input — `Ctrl+D`, or a piped script running out of moves —
+  ends it with a `NoSuchElementException` rather than cleanly.
 - No automated test suite exists; changes are verified by compiling and playing.
 
 ## License
