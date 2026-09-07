@@ -22,7 +22,7 @@ public class ThreeByThreeGrid {
 		
 		for (int i = 0; i < 3; i++) {
 			for (int j = 0; j < 3; j++) {
-				if (grid[i][j] == " ") {
+				if (" ".equals(grid[i][j])) {
 					full = false;
 				}
 			}
@@ -102,7 +102,7 @@ public class ThreeByThreeGrid {
 				
 		int j = num - 1;
 		
-		if (grid[j][i] == " ") {
+		if (" ".equals(grid[j][i])) {
 			taken = false;
 		}
 		else {
