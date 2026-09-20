@@ -17,6 +17,10 @@ javac -d out src/*.java
 The `out/` directory is ignored by `.gitignore`, so compiled classes are never
 committed.
 
+The same command is run by the GitHub Actions workflow in `.github/workflows/ci.yml`
+on every push to `master` and every pull request, followed by one bounded game played
+from piped input as a smoke test.
+
 ## Running
 The entry point is the `Driver` class:
 
@@ -55,7 +59,9 @@ The game ends as soon as a line of three is completed or the board fills, and on
 - No quit command is offered; a game in progress is left only by interrupting the
   process. Reaching end of input — `Ctrl+D`, or a piped script running out of moves —
   ends it with a `NoSuchElementException` rather than cleanly.
-- No automated test suite exists; changes are verified by compiling and playing.
+- No automated test suite exists; changes are verified by compiling and playing. The
+  CI workflow only checks that the sources compile and that a game runs to a result
+  line, not which moves the computer makes or who wins.
 
 ## License
 This project is released under the Stephenson Software Non-Commercial License. See
