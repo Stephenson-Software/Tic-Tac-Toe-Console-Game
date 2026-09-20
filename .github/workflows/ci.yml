@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  compile-and-play:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Compile
+        run: javac -d out src/*.java
+
+      # X is fed every space in board order. Each token is either played (the space is
+      # free) or rejected with "That space is taken!" (the computer took it), so after at
+      # most nine tokens every space has been visited and the board is full. The game
+      # therefore always ends with exactly one result line and never reaches end of
+      # input, whatever the computer's unseeded Random picks. Which result is printed
+      # varies between runs, so only the structure of the output is asserted.
+      - name: Play one full game
+        shell: bash
+        run: |
+          printf 'a1\nb1\nc1\na2\nb2\nc2\na3\nb3\nc3\n' | timeout 20 java -cp out Driver | tee game.log
+
+      - name: Check the game ran to a result
+        shell: bash
+        run: |
+          grep -Fq '   A   B   C' game.log
+          grep -Fq 'Which move would you like to make?' game.log
+          results=$(grep -cE '^(You won!|You lost!|It was a tie!)$' game.log || true)
+          if [ "$results" -ne 1 ]; then
+            echo "expected exactly one result line, found $results"
+            exit 1
+          fi
