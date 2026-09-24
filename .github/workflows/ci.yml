@@ -27,6 +27,9 @@ jobs:
       # varies between runs, so only the structure of the output is asserted.
       - name: Play one full game
         shell: bash
+        # CI never reports usage to the trace service.
+        env:
+          TRACE_USAGE_REPORTING: 'off'
         run: |
           printf 'a1\nb1\nc1\na2\nb2\nc2\na3\nb3\nc3\n' | timeout 20 java -cp out Driver | tee game.log
 

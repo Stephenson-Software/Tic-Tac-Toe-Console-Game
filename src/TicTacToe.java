@@ -13,20 +13,24 @@ public class TicTacToe {
 		theGrid = grid;
 	}
 	
-	public void play() {
+	/**
+	 * Plays one game to the end.
+	 * @return "won", "lost" or "tie"
+	 */
+	public String play() {
 		while (running == true) {
 			playerMove();
 			
 			if (theGrid.checkIfThreeXInARow() == true) {
 				theGrid.printGrid();
 				System.out.println("You won!");
-				break;
+				return "won";
 			}
 						
 			if (theGrid.checkIfGridFull() == true) {
 				theGrid.printGrid();
 				System.out.println("It was a tie!");
-				break;
+				return "tie";
 			}
 						
 			computerMove();
@@ -34,10 +38,10 @@ public class TicTacToe {
 			if (theGrid.checkIfThreeOInARow() == true) {
 				theGrid.printGrid();
 				System.out.println("You lost!");
-				break;
+				return "lost";
 			}
 		}
-		
+		return "tie";
 	}
 	
 	
