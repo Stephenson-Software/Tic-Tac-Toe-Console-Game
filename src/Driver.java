@@ -3,11 +3,19 @@ public class Driver {
 
 	public static void main(String[] args) {
 		
-		ThreeByThreeGrid myGrid = new ThreeByThreeGrid();
+		UsageReporting usageReporting = new UsageReporting();
+		usageReporting.start();
 		
-		TicTacToe theGame = new TicTacToe(myGrid);
-		
-		theGame.play();
+		try {
+			ThreeByThreeGrid myGrid = new ThreeByThreeGrid();
+			
+			TicTacToe theGame = new TicTacToe(myGrid);
+			
+			usageReporting.gameFinished(theGame.play());
+		}
+		finally {
+			usageReporting.close();
+		}
 
 	}
 

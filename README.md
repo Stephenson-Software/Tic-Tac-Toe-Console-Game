@@ -2,12 +2,12 @@
 This application allows the user to play Tic Tac Toe against the computer.
 
 ## Requirements
-A JDK is required, not just a JRE, since the sources are compiled with `javac`. Java 7
-or newer is needed, because the grid uses a `switch` on a `String`. No build system,
-and no third-party dependency, is used by this project.
+A JDK is required, not just a JRE, since the sources are compiled with `javac`. Java 8
+or newer is needed, because the vendored usage-reporting client (`src/TraceClient.java`)
+uses lambdas. No build system, and no third-party dependency, is used by this project.
 
 ## Building
-The three sources live flat in `src/` in the default package and are compiled with a
+The sources live flat in `src/` in the default package and are compiled with a
 single command:
 
 ```
@@ -62,6 +62,19 @@ The game ends as soon as a line of three is completed or the board fills, and on
 - No automated test suite exists; changes are verified by compiling and playing. The
   CI workflow only checks that the sources compile and that a game runs to a result
   line, not which moves the computer makes or who wins.
+
+## Usage reporting
+Usage reporting is on by default: each run sends a `startup` event carrying the game's name and version, and a `game-finished` event carrying only the result (`won`, `lost` or `tie`), to the maintainers' [trace](https://github.com/Stephenson-Software/trace) service at `https://trace.danielstephenson.dev`, so that it is known whether anybody plays it. Nothing else is sent: no moves, usernames, hostnames, IP addresses, paths or anything typed at the prompt. The reports are sent from a background thread and dropped, not retried, if the service cannot be reached; at most a few seconds are waited for them when the game exits. The first run that reports prints a one-line notice and writes `~/.config/tic-tac-toe-console-game/usage-reporting.properties`.
+
+To turn it off, any one of these is enough:
+
+- `enabled=false` in `~/.config/tic-tac-toe-console-game/usage-reporting.properties`
+- `TRACE_USAGE_REPORTING=off` (also `false`, `0`, `no`) in the environment — the switch every trace client honours, checked before the settings file
+- `DO_NOT_TRACK=1` (also `true`, `yes`) in the environment, per [consoledonottrack.com](https://consoledonottrack.com)
+
+The key in `src/UsageReporting.java` is the write key issued to this game; it can only add usage events and is not secret. The CI workflow sets `TRACE_USAGE_REPORTING=off`, so a CI run never reports.
+
+Details on what trace collects and why: https://github.com/Stephenson-Software/trace#usage-reporting
 
 ## License
 This project is released under the Stephenson Software Non-Commercial License. See
