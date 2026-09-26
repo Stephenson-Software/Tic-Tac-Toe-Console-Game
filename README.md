@@ -18,8 +18,9 @@ The `out/` directory is ignored by `.gitignore`, so compiled classes are never
 committed.
 
 The same command is run by the GitHub Actions workflow in `.github/workflows/ci.yml`
-on every push to `master` and every pull request, followed by one bounded game played
-from piped input as a smoke test.
+on every push to `master` and every pull request, followed by two bounded games played
+from piped input: a smoke test, and one that checks an uppercase move is played in the
+right column and that malformed moves are rejected rather than crashing the game.
 
 ## Running
 The entry point is the `Driver` class:
@@ -40,28 +41,25 @@ space at random. The board is printed before every prompt:
 ```
 
 A move is entered as a column letter followed by a row number, with no space between
-them — `a1` is the top-left space, `b2` the center, `c3` the bottom-right. Only
-lowercase column letters are recognized (see Known limitations below).
+them — `a1` is the top-left space, `b2` the center, `c3` the bottom-right. Column
+letters are accepted in either case, so `B2` and `b2` are the same move.
 
-If an occupied space is chosen, `That space is taken! Choose another one.` is printed
-and the board is shown again.
+Anything else — a single character, a letter other than `a`-`c`, a row other than
+`1`-`3`, or extra characters such as `a1x` — is rejected: `That is not a valid move.
+Enter a column letter and a row number, like a1 or B2.` is printed and the board is
+shown again. If an occupied space is chosen, `That space is taken! Choose another one.`
+is printed and the board is shown again.
 
 The game ends as soon as a line of three is completed or the board fills, and one of
 `You won!`, `You lost!`, or `It was a tie!` is printed with the final board.
 
 ## Known limitations
-- Only lowercase column letters are translated; an uppercase or otherwise unrecognized
-  letter is silently played in column A
-  ([#3](https://github.com/Stephenson-Software/Tic-Tac-Toe-Console-Game/issues/3)).
-- Move input is not validated, so a one-character entry, a non-digit row, or a row
-  outside 1-3 ends the game with an unhandled exception
-  ([#4](https://github.com/Stephenson-Software/Tic-Tac-Toe-Console-Game/issues/4)).
 - No quit command is offered; a game in progress is left only by interrupting the
   process. Reaching end of input — `Ctrl+D`, or a piped script running out of moves —
   ends it with a `NoSuchElementException` rather than cleanly.
 - No automated test suite exists; changes are verified by compiling and playing. The
-  CI workflow only checks that the sources compile and that a game runs to a result
-  line, not which moves the computer makes or who wins.
+  CI workflow only checks that the sources compile, that a game runs to a result
+  line, and how move input is parsed — not which moves the computer makes or who wins.
 
 ## Usage reporting
 Usage reporting is on by default: each run sends a `startup` event carrying the game's name and version, and a `game-finished` event carrying only the result (`won`, `lost` or `tie`), to the maintainers' [trace](https://github.com/Stephenson-Software/trace) service at `https://trace.danielstephenson.dev`, so that it is known whether anybody plays it. Nothing else is sent: no moves, usernames, hostnames, IP addresses, paths or anything typed at the prompt. The reports are sent from a background thread and dropped, not retried, if the service cannot be reached; at most a few seconds are waited for them when the game exits. The first run that reports prints a one-line notice and writes `~/.config/tic-tac-toe-console-game/usage-reporting.properties`.
