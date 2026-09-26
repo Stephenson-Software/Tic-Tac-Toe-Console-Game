@@ -32,7 +32,7 @@ public class UsageReporting {
 	/** The name the program key was issued for; the application of every event. */
 	static final String APPLICATION = "Tic-Tac-Toe-Console-Game";
 	/** Sent as the version tag of the startup event. Raise it when the game changes. */
-	static final String VERSION = "1.0.0";
+	static final String VERSION = "0.1.0";
 	static final String DEFAULT_ENDPOINT = "https://trace.danielstephenson.dev";
 	/** The write key issued to this game by trace. It can only add usage events and is not secret. */
 	static final String KEY = "oTgCaEMaZsygwGvVaF9lmfqZw6YA1eRF9UnFwyPrVuQ";
