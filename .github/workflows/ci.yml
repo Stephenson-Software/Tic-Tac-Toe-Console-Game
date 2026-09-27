@@ -43,3 +43,30 @@ jobs:
             echo "expected exactly one result line, found $results"
             exit 1
           fi
+
+      # The first move is an uppercase B2, which must be played at B2, not A2. The next
+      # six tokens are malformed (too short, non-digit row, row out of range, row 0,
+      # unknown column, extra characters) and must each be rejected with a re-prompt
+      # instead of crashing the game. The remaining eight spaces are then visited in
+      # board order, so the game still ends with exactly one result line.
+      - name: Play one game with uppercase and malformed moves
+        shell: bash
+        env:
+          TRACE_USAGE_REPORTING: 'off'
+        run: |
+          printf 'B2\na\nab\na9\na0\nz1\na1x\na1\nb1\nc1\na2\nc2\na3\nb3\nc3\n' | timeout 20 java -cp out Driver | tee input.log
+
+      - name: Check the moves were translated and rejected correctly
+        shell: bash
+        run: |
+          grep -Eq '^2 \[.\] \[X\] \[.\]$' input.log
+          invalid=$(grep -cF 'That is not a valid move.' input.log || true)
+          if [ "$invalid" -ne 6 ]; then
+            echo "expected six rejected moves, found $invalid"
+            exit 1
+          fi
+          results=$(grep -cE '^(You won!|You lost!|It was a tie!)$' input.log || true)
+          if [ "$results" -ne 1 ]; then
+            echo "expected exactly one result line, found $results"
+            exit 1
+          fi

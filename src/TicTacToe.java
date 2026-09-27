@@ -49,7 +49,15 @@ public class TicTacToe {
 		theGrid.printGrid();
 		System.out.println("Which move would you like to make?");
 		
-		String move = sc.next();
+		String move = sc.next().toLowerCase();
+
+		// a move is exactly a column letter a-c followed by a row number 1-3
+		if (move.length() != 2 || "abc".indexOf(move.charAt(0)) == -1 || "123".indexOf(move.charAt(1)) == -1) {
+			System.out.println("That is not a valid move. Enter a column letter and a row number, like a1 or B2.");
+			playerMove();
+			return;
+		}
+
 		String abc = move.substring(0,1);
 		int num = Integer.valueOf(move.substring(1, 2));
 		
