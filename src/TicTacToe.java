@@ -46,41 +46,43 @@ public class TicTacToe {
 	
 	
 	public void playerMove() {
-		theGrid.printGrid();
-		System.out.println("Which move would you like to make?");
-		
-		String move = sc.next().toLowerCase();
+		while (true) {
+			theGrid.printGrid();
+			System.out.println("Which move would you like to make?");
+			
+			String move = sc.next().toLowerCase();
 
-		// a move is exactly a column letter a-c followed by a row number 1-3
-		if (move.length() != 2 || "abc".indexOf(move.charAt(0)) == -1 || "123".indexOf(move.charAt(1)) == -1) {
-			System.out.println("That is not a valid move. Enter a column letter and a row number, like a1 or B2.");
-			playerMove();
-			return;
-		}
+			// a move is exactly a column letter a-c followed by a row number 1-3
+			if (move.length() != 2 || "abc".indexOf(move.charAt(0)) == -1 || "123".indexOf(move.charAt(1)) == -1) {
+				System.out.println("That is not a valid move. Enter a column letter and a row number, like a1 or B2.");
+				continue;
+			}
 
-		String abc = move.substring(0,1);
-		int num = Integer.valueOf(move.substring(1, 2));
-		
-		if (theGrid.checkSpace(abc, num) == false) {
-			theGrid.changeBox(abc,  num, "X");
-		}
-		else {
-			System.out.println("That space is taken! Choose another one.");
-			playerMove();
+			String abc = move.substring(0,1);
+			int num = Integer.valueOf(move.substring(1, 2));
+			
+			if (theGrid.checkSpace(abc, num) == false) {
+				theGrid.changeBox(abc,  num, "X");
+				return;
+			}
+			else {
+				System.out.println("That space is taken! Choose another one.");
+			}
 		}
 	}
 	
 	public void computerMove() {
 		
 		String[] letters = {"a", "b", "c"};
-		String abc = letters[rndm.nextInt(3)];
-		int num = rndm.nextInt(3) + 1;
 		
-		if (theGrid.checkSpace(abc, num) == false) {
-			theGrid.changeBox(abc, num, "O");
-		}
-		else {
-			computerMove();
+		while (true) {
+			String abc = letters[rndm.nextInt(3)];
+			int num = rndm.nextInt(3) + 1;
+			
+			if (theGrid.checkSpace(abc, num) == false) {
+				theGrid.changeBox(abc, num, "O");
+				return;
+			}
 		}
 	}
 	
