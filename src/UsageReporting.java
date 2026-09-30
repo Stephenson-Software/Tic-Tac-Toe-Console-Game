@@ -13,9 +13,9 @@ import java.util.Properties;
  * Reports that the game was played to the trace service
  * (https://trace.danielstephenson.dev), so that it is known whether anybody runs it.
  *
- * Two events are sent, from the client's background thread: "startup" once per run,
- * tagged with the program version only, and "game-finished" when a game ends, tagged
- * with the result only (won, lost or tie). Nothing else is ever sent: no moves, no
+ * Two events are sent, from the client's background thread, each tagged with the
+ * program version: "startup" once per run, and "game-finished" when a game ends, also
+ * tagged with the result (won, lost or tie). Nothing else is ever sent: no moves, no
  * usernames, hostnames, paths or IP addresses.
  *
  * Reporting is on by default. It is switched off with enabled=false in the settings
@@ -31,7 +31,7 @@ import java.util.Properties;
 public class UsageReporting {
 	/** The name the program key was issued for; the application of every event. */
 	static final String APPLICATION = "Tic-Tac-Toe-Console-Game";
-	/** Sent as the version tag of the startup event. Raise it when the game changes. */
+	/** Sent as the version tag of every event. Raise it when the game changes. */
 	static final String VERSION = "0.1.0";
 	static final String DEFAULT_ENDPOINT = "https://trace.danielstephenson.dev";
 	/** The write key issued to this game by trace. It can only add usage events and is not secret. */
@@ -68,7 +68,7 @@ public class UsageReporting {
 		try {
 			// -Dusage-reporting.endpoint=... points a run at a local stub without touching the file.
 			String endpoint = System.getProperty("usage-reporting.endpoint", settings.getProperty(ENDPOINT_KEY, DEFAULT_ENDPOINT));
-			client = TraceClient.builder(endpoint.trim(), APPLICATION)
+			client = TraceClient.builder(endpoint.trim(), APPLICATION, VERSION)
 					.key(KEY)
 					.enabled(!"false".equalsIgnoreCase(settings.getProperty(ENABLED_KEY, "true").trim()))
 					.build();
@@ -82,7 +82,7 @@ public class UsageReporting {
 			System.out.println(firstRunNotice());
 			writeDefaultSettings();
 		}
-		client.report("startup", null, Collections.singletonMap("version", VERSION));
+		client.report("startup");
 	}
 
 	/** Reports that a game ended with the given result: "won", "lost" or "tie". */
@@ -130,7 +130,7 @@ public class UsageReporting {
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
 			writer.write("# Usage reporting for " + APPLICATION + ".\n");
 			writer.write("# When enabled, a 'startup' event (name and version) and a 'game-finished' event\n");
-			writer.write("# (won, lost or tie) are sent to " + DEFAULT_ENDPOINT + ". Nothing else is ever sent.\n");
+			writer.write("# (version, and won, lost or tie) are sent to " + DEFAULT_ENDPOINT + ". Nothing else is ever sent.\n");
 			writer.write("# Set enabled to false to turn it off. TRACE_USAGE_REPORTING=off or DO_NOT_TRACK=1\n");
 			writer.write("# in the environment turns it off too, whatever this file says.\n");
 			writer.write("# Details: " + DETAILS_URL + "\n");
