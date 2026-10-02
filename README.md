@@ -1,6 +1,30 @@
 # Tic Tac Toe Console Game
 This application allows the user to play Tic Tac Toe against the computer.
 
+## Play in your browser
+The game can be played at <https://tic-tac-toe-java.play.danielstephenson.dev>, and is listed with
+the other browser games at <https://danielstephenson.dev/play>. It runs the same Java classes in the
+browser with [CheerpJ](https://cheerpj.com) (Leaning Technologies), loaded from CheerpJ's official
+CDN under its Community License.
+
+The browser build lives in `web/`:
+
+- `web/java/BrowserMain.java` is a browser-only entry point. CheerpJ offers no interactive
+  standard input, so it replaces `System.in` and `System.out` with streams backed by two JavaScript
+  functions on the page, then plays `TicTacToe` unchanged, offering a new game after each result.
+  It does not start usage reporting, so the browser build never reports.
+- `web/index.html` shows the game's output, and a text field with an Enter button feeds each move
+  to `System.in`.
+- `web/build.sh` compiles `src/` and `BrowserMain` with `--release 8` (CheerpJ's default Java
+  runtime is Java 8) into `build/web/tic-tac-toe.jar`, and copies the page next to it.
+
+To try it locally, run `./web/build.sh`, serve `build/web` (for example with
+`python3 -m http.server 8000 --directory build/web`) and open <http://localhost:8000>.
+
+The `Browser build` workflow (`.github/workflows/browser.yml`) builds and checks the site on every
+pull request and push, and deploys it to arcade, versioned as `version.txt` plus the commit, on a
+manual run, or on a push to `master` when the repository variable `ARCADE_ENABLED` is `true`.
+
 ## Requirements
 A JDK is required, not just a JRE, since the sources are compiled with `javac`. Java 8
 or newer is needed, because the vendored usage-reporting client (`src/TraceClient.java`)

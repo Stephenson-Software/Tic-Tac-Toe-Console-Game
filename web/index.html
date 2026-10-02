@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tic Tac Toe</title>
+<meta name="description" content="The Tic Tac Toe console game, in Java, running in the browser with CheerpJ.">
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --panel: #ffffff;
+    --text: #1d1d1b;
+    --muted: #5d5d58;
+    --border: #d6d4cc;
+    --accent: #2f6f4f;
+    --accent-text: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #151614;
+      --panel: #1f201d;
+      --text: #e8e6df;
+      --muted: #a3a199;
+      --border: #3a3b36;
+      --accent: #5fb38a;
+      --accent-text: #0e110f;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; }
+  .lede { margin: 0 0 16px; color: var(--muted); }
+  #terminal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 0;
+    height: 360px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font: 16px/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  form {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  #move {
+    flex: 1;
+    min-width: 0;
+    font: 16px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--text);
+  }
+  button {
+    font: inherit;
+    font-size: 16px;
+    padding: 10px 18px;
+    border: 0;
+    border-radius: 6px;
+    background: var(--accent);
+    color: var(--accent-text);
+    cursor: pointer;
+  }
+  button:disabled, #move:disabled { opacity: 0.5; cursor: default; }
+  .hint { color: var(--muted); font-size: 0.9rem; margin: 8px 0 0; }
+  footer {
+    margin-top: 32px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  footer p { margin: 4px 0; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Tic Tac Toe</h1>
+  <p class="lede">The original Java console game, unchanged, running in your browser. You are X and move first.</p>
+
+  <pre id="terminal" aria-live="polite">Loading Java (the first visit downloads the runtime, which can take a little while)...
+</pre>
+
+  <form id="input-form" autocomplete="off">
+    <input id="move" name="move" type="text" inputmode="text" autocapitalize="none"
+           autocorrect="off" spellcheck="false" enterkeyhint="send"
+           placeholder="Your move, like a1 or B2" aria-label="Your move" disabled>
+    <button id="send" type="submit" disabled>Enter</button>
+  </form>
+  <p class="hint">A move is a column letter and a row number: a1 is the top-left space, b2 the center, c3 the bottom-right.</p>
+
+  <footer>
+    <p>Runs in your browser with <a href="https://cheerpj.com" target="_blank" rel="noopener">CheerpJ (Leaning Technologies)</a>.</p>
+    <p>Source: <a href="https://github.com/Stephenson-Software/Tic-Tac-Toe-Console-Game">Stephenson-Software/Tic-Tac-Toe-Console-Game</a></p>
+    <p>More by Daniel Stephenson &rarr; <a href="https://danielstephenson.dev/play">danielstephenson.dev/play</a></p>
+  </footer>
+</main>
+
+<script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
+<script>
+  (function () {
+    var terminal = document.getElementById("terminal");
+    var form = document.getElementById("input-form");
+    var input = document.getElementById("move");
+    var send = document.getElementById("send");
+
+    var loaded = false;
+    var queuedLines = [];   // lines submitted before Java asked for one
+    var waiting = null;     // resolves the pending readLine() call
+
+    function append(text) {
+      if (!loaded) {
+        terminal.textContent = "";
+        loaded = true;
+      }
+      terminal.textContent += text;
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function setInputEnabled(enabled) {
+      input.disabled = !enabled;
+      send.disabled = !enabled;
+    }
+
+    // Natives for BrowserMain (web/java/BrowserMain.java). CheerpJ suspends the Java
+    // thread until the returned promise resolves, so readLine() blocks like a console.
+    async function Java_BrowserMain_readLine(lib) {
+      if (queuedLines.length > 0) {
+        return queuedLines.shift();
+      }
+      return new Promise(function (resolve) { waiting = resolve; });
+    }
+
+    async function Java_BrowserMain_write(lib, text) {
+      append(text);
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var line = input.value;
+      input.value = "";
+      append(line + "\n");
+      if (waiting) {
+        var resolve = waiting;
+        waiting = null;
+        resolve(line);
+      } else {
+        queuedLines.push(line);
+      }
+      input.focus();
+    });
+
+    async function start() {
+      try {
+        await cheerpjInit({
+          version: 8,
+          status: "none",
+          natives: { Java_BrowserMain_readLine: Java_BrowserMain_readLine, Java_BrowserMain_write: Java_BrowserMain_write }
+        });
+        // CheerpJ fetches files under /app/ with HTTP Range requests, which a plain
+        // static host may not support. The jar is small, so it is downloaded whole
+        // here and handed to CheerpJ through its in-memory /str/ filesystem instead.
+        var response = await fetch("tic-tac-toe.jar");
+        if (!response.ok) {
+          throw new Error("tic-tac-toe.jar could not be downloaded (HTTP " + response.status + ")");
+        }
+        cheerpOSAddStringFile("/str/tic-tac-toe.jar", new Uint8Array(await response.arrayBuffer()));
+        setInputEnabled(true);
+        input.focus();
+        var exitCode = await cheerpjRunMain("BrowserMain", "/str/tic-tac-toe.jar");
+        append("\n[The game exited with code " + exitCode + ". Reload the page to play again.]\n");
+      } catch (error) {
+        append("\n[Java could not be started: " + error + "]\n");
+      }
+      setInputEnabled(false);
+    }
+
+    start();
+  })();
+</script>
+</body>
+</html>
