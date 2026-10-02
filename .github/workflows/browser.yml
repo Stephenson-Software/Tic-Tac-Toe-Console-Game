@@ -1,0 +1,51 @@
+name: Browser build
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build the browser site
+        run: ./web/build.sh
+
+      - name: Check the site
+        shell: bash
+        run: |
+          test -s build/web/index.html
+          test -s build/web/tic-tac-toe.jar
+          unzip -l build/web/tic-tac-toe.jar | grep -q 'BrowserMain.class'
+          unzip -l build/web/tic-tac-toe.jar | grep -q 'TicTacToe.class'
+          grep -Fq 'https://cjrtnc.leaningtech.com/' build/web/index.html
+          grep -Fq 'https://cheerpj.com' build/web/index.html
+          grep -Fq 'https://danielstephenson.dev/play' build/web/index.html
+
+      - name: Write the deploy version
+        id: version
+        shell: bash
+        run: |
+          base=$(cat version.txt 2>/dev/null || echo 0.1.0)
+          file="$RUNNER_TEMP/version.txt"
+          echo "${base}+g${GITHUB_SHA::7}" > "$file"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          cat "$file"
+
+      - name: Deploy to arcade
+        if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && vars.ARCADE_ENABLED == 'true')
+        uses: Stephenson-Software/arcade-deploy@v1
+        with:
+          slug: tic-tac-toe-java
+          token: ${{ secrets.ARCADE_TOKEN }}
+          site-dir: build/web
+          version-file: ${{ steps.version.outputs.file }}
