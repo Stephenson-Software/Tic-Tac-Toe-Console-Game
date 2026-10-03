@@ -61,6 +61,11 @@ public class UsageReporting {
 		return new File(new File(new File(home, ".config"), "tic-tac-toe-console-game"), SETTINGS_FILE_NAME);
 	}
 
+	/** The random installation ID's file, next to the settings file; null without a home. */
+	File installIdFile() {
+		return settingsFile == null ? null : new File(settingsFile.getAbsoluteFile().getParentFile(), TraceInstallId.FILE_NAME);
+	}
+
 	/** Reads the settings (writing them on the first run), shows the notice once, and reports startup. */
 	public void start() {
 		boolean firstRun = settingsFile != null && !settingsFile.exists();
@@ -71,6 +76,9 @@ public class UsageReporting {
 			client = TraceClient.builder(endpoint.trim(), APPLICATION, VERSION)
 					.key(KEY)
 					.enabled(!"false".equalsIgnoreCase(settings.getProperty(ENABLED_KEY, "true").trim()))
+					// Resolved by the client only once it knows reporting is on.
+					.installId(TraceInstallId.fromEnvironment())
+					.installIdFile(installIdFile())
 					.build();
 		} catch (RuntimeException badEndpoint) {
 			client = TraceClient.disabled();
@@ -100,8 +108,8 @@ public class UsageReporting {
 	}
 
 	String firstRunNotice() {
-		return "Usage reporting is on: " + APPLICATION + " sends its name, version and each game's result"
-				+ " (won, lost or tie) to " + DEFAULT_ENDPOINT + " - nothing about you, your moves or this machine."
+		return "Usage reporting is on: " + APPLICATION + " sends its name, version, a random installation ID and"
+				+ " each game's result (won, lost or tie) to " + DEFAULT_ENDPOINT + " - nothing about you or your moves."
 				+ " Turn it off with " + ENABLED_KEY + "=false in " + settingsFile.getPath()
 				+ ", or with TRACE_USAGE_REPORTING=off in the environment. Details: " + DETAILS_URL;
 	}
@@ -130,7 +138,9 @@ public class UsageReporting {
 		try (Writer writer = new OutputStreamWriter(new FileOutputStream(settingsFile), StandardCharsets.UTF_8)) {
 			writer.write("# Usage reporting for " + APPLICATION + ".\n");
 			writer.write("# When enabled, a 'startup' event (name and version) and a 'game-finished' event\n");
-			writer.write("# (version, and won, lost or tie) are sent to " + DEFAULT_ENDPOINT + ". Nothing else is ever sent.\n");
+			writer.write("# (version, and won, lost or tie) are sent to " + DEFAULT_ENDPOINT + ", each with a random\n");
+			writer.write("# installation ID kept in " + TraceInstallId.FILE_NAME + " next to this file (delete it to get a new\n");
+			writer.write("# one). Nothing else is ever sent.\n");
 			writer.write("# Set enabled to false to turn it off. TRACE_USAGE_REPORTING=off or DO_NOT_TRACK=1\n");
 			writer.write("# in the environment turns it off too, whatever this file says.\n");
 			writer.write("# Details: " + DETAILS_URL + "\n");
