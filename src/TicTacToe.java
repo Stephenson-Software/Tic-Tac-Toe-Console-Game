@@ -15,11 +15,15 @@ public class TicTacToe {
 	
 	/**
 	 * Plays one game to the end.
-	 * @return "won", "lost" or "tie"
+	 * @return "won", "lost" or "tie", or null if input ended before the game finished
 	 */
 	public String play() {
 		while (running == true) {
 			playerMove();
+			
+			if (running == false) {
+				return null;
+			}
 			
 			if (theGrid.checkIfThreeXInARow() == true) {
 				theGrid.printGrid();
@@ -49,6 +53,13 @@ public class TicTacToe {
 		while (true) {
 			theGrid.printGrid();
 			System.out.println("Which move would you like to make?");
+			
+			// input has ended (Ctrl+D, or a piped script ran out of moves)
+			if (sc.hasNext() == false) {
+				System.out.println("Input ended before the game was finished.");
+				running = false;
+				return;
+			}
 			
 			String move = sc.next().toLowerCase();
 
