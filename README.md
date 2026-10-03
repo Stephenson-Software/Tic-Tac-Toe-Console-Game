@@ -1,4 +1,7 @@
 # Tic Tac Toe Console Game
+
+[![Play in your browser](https://img.shields.io/badge/Play-in%20your%20browser-2ea44f)](https://danielstephenson.dev/play/tic-tac-toe-console-game)
+
 This application allows the user to play Tic Tac Toe against the computer.
 
 ## Play in your browser
