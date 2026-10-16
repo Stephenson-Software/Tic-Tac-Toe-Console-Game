@@ -70,3 +70,22 @@ jobs:
             echo "expected exactly one result line, found $results"
             exit 1
           fi
+
+      # One move cannot finish a game, so input runs out at the next prompt. The game
+      # must say so and exit with status 0 (the step's pipefail shell fails on anything
+      # else) instead of crashing with a NoSuchElementException.
+      - name: Play one game that is left unfinished
+        shell: bash
+        env:
+          TRACE_USAGE_REPORTING: 'off'
+        run: |
+          printf 'a1\n' | timeout 20 java -cp out Driver 2>&1 | tee eof.log
+
+      - name: Check the unfinished game ended cleanly
+        shell: bash
+        run: |
+          grep -Fxq 'Input ended before the game was finished.' eof.log
+          if grep -Fq 'Exception' eof.log; then
+            echo "the game crashed when input ended"
+            exit 1
+          fi

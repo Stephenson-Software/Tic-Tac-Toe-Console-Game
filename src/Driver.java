@@ -11,7 +11,12 @@ public class Driver {
 			
 			TicTacToe theGame = new TicTacToe(myGrid);
 			
-			usageReporting.gameFinished(theGame.play());
+			String result = theGame.play();
+			
+			// null means input ended before the game finished, so there is no result to report
+			if (result != null) {
+				usageReporting.gameFinished(result);
+			}
 		}
 		finally {
 			usageReporting.close();
