@@ -44,8 +44,20 @@ javac -d out src/*.java
 The `out/` directory is ignored by `.gitignore`, so compiled classes are never
 committed.
 
-The same command is run by the GitHub Actions workflow in `.github/workflows/ci.yml`
-on every push to `master` and every pull request, followed by three bounded games played
+## Testing
+The rules of the board — every winning line, the tie condition, and how a column
+letter and row number pick a space — are checked by `test/ThreeByThreeGridTest.java`,
+a plain class with no test framework. It is compiled together with the sources and
+run directly, and exits with a non-zero status if any check fails:
+
+```
+javac -d out src/*.java test/*.java
+java -cp out ThreeByThreeGridTest
+```
+
+The GitHub Actions workflow in `.github/workflows/ci.yml` runs on every push to
+`master` and every pull request. It runs the build command above, then these two
+commands, and then plays three bounded games
 from piped input: a smoke test, one that checks an uppercase move is played in the
 right column and that malformed moves are rejected rather than crashing the game, and
 one whose input runs out mid-game, which must end cleanly.
@@ -86,10 +98,11 @@ The game ends as soon as a line of three is completed or the board fills, and on
   or by ending input — `Ctrl+D`, or a piped script running out of moves — which prints
   `Input ended before the game was finished.` and exits normally. A game left that way
   has no result, so no `game-finished` usage event is sent for it.
-- No automated test suite exists; changes are verified by compiling and playing. The
-  CI workflow only checks that the sources compile, that a game runs to a result
-  line, how move input is parsed, and that running out of input ends a game cleanly —
-  not which moves the computer makes or who wins.
+- Only `ThreeByThreeGrid` has automated tests. `TicTacToe` reads from `System.in`
+  and moves with an unseeded `Random`, so it is checked only by the CI games, which
+  verify that a game runs to a result line, how move input is parsed, and that
+  running out of input ends a game cleanly — not which moves the computer makes or
+  who wins.
 
 ## Usage reporting
 Usage reporting is on by default: each run sends a `startup` event carrying the game's name and version, and, once a game ends with a result, a `game-finished` event carrying only the version and the result (`won`, `lost` or `tie`), to the maintainers' [trace](https://github.com/Stephenson-Software/trace) service at `https://trace.danielstephenson.dev`, so that it is known whether anybody plays it. Each event also carries a random installation ID (the tag `install`), so installations can be counted rather than events. Nothing else is sent: no moves, usernames, hostnames, IP addresses, paths or anything typed at the prompt. The reports are sent from a background thread and dropped, not retried, if the service cannot be reached; at most a few seconds are waited for them when the game exits. The first run that reports prints a one-line notice and writes `~/.config/tic-tac-toe-console-game/usage-reporting.properties`.
