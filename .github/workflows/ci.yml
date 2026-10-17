@@ -19,6 +19,13 @@ jobs:
       - name: Compile
         run: javac -d out src/*.java
 
+      # Characterizes the board rules (every winning line, the tie condition and the
+      # column translation) directly, independent of the computer's random moves.
+      - name: Check the grid rules
+        run: |
+          javac -d out src/*.java test/*.java
+          java -cp out ThreeByThreeGridTest
+
       # X is fed every space in board order. Each token is either played (the space is
       # free) or rejected with "That space is taken!" (the computer took it), so after at
       # most nine tokens every space has been visited and the board is full. The game
