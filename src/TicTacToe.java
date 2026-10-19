@@ -52,7 +52,7 @@ public class TicTacToe {
 	public void playerMove() {
 		while (true) {
 			theGrid.printGrid();
-			System.out.println("Which move would you like to make?");
+			System.out.println("Which move would you like to make? Enter a column letter and a row number, like a1 or B2.");
 			
 			// input has ended (Ctrl+D, or a piped script ran out of moves)
 			if (sc.hasNext() == false) {
