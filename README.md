@@ -80,8 +80,9 @@ space at random. The board is printed before every prompt:
 3 [ ] [ ] [ ]
 ```
 
-A move is entered as a column letter followed by a row number, with no space between
-them — `a1` is the top-left space, `b2` the center, `c3` the bottom-right. Column
+Each turn is prompted with `Which move would you like to make? Enter a column letter
+and a row number, like a1 or B2.` A move is entered as a column letter followed by a
+row number, with no space between them — `a1` is the top-left space, `b2` the center, `c3` the bottom-right. Column
 letters are accepted in either case, so `B2` and `b2` are the same move.
 
 Anything else — a single character, a letter other than `a`-`c`, a row other than
