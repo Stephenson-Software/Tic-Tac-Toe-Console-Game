@@ -25,6 +25,7 @@ public class ThreeByThreeGridTest {
 		winChecks_ignoreTheOtherMark();
 		winChecks_ignoreMixedLines();
 		checkIfGridFull_onlyWhenNoSpaceIsLeft();
+		columnIndex_mapsEachLetterToItsColumn();
 		unknownColumn_isTreatedAsColumnA();
 
 		if (failures > 0) {
@@ -146,9 +147,18 @@ public class ThreeByThreeGridTest {
 		check("drawn board: no three O", grid.checkIfThreeOInARow() == false);
 	}
 
+	public static void columnIndex_mapsEachLetterToItsColumn() {
+		ThreeByThreeGrid grid = new ThreeByThreeGrid();
+
+		check("columnIndex(\"a\") is 0", grid.columnIndex("a") == 0);
+		check("columnIndex(\"b\") is 1", grid.columnIndex("b") == 1);
+		check("columnIndex(\"c\") is 2", grid.columnIndex("c") == 2);
+		check("columnIndex(\"z\") is 0", grid.columnIndex("z") == 0);
+	}
+
 	public static void unknownColumn_isTreatedAsColumnA() {
-		// characterizes current behavior: checkSpace and changeBox have no default branch,
-		// so any other column string falls through to column a. playerMove() lower-cases
+		// characterizes current behavior: columnIndex, used by both checkSpace and changeBox,
+		// falls back to column a for any other column string. playerMove() lower-cases
 		// and validates the move first, so the game never passes one in.
 		ThreeByThreeGrid grid = new ThreeByThreeGrid();
 		grid.changeBox("A", 2, "X");

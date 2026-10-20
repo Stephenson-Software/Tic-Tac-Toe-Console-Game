@@ -83,23 +83,22 @@ public class ThreeByThreeGrid {
 		return threeOInRow;
 	}
 	
+	public int columnIndex(String abc) { // translates a column letter to its index within a row; anything else is column a
+		switch(abc) {
+			case "b":
+				return 1;
+			case "c":
+				return 2;
+			default:
+				return 0;
+		}
+	}
+	
 	public boolean checkSpace(String abc, int num) { //checks if the space is taken or not and returns true/false
 		boolean taken;
 		
-		int i = 0;
+		int i = columnIndex(abc);
 		
-		switch(abc) {
-			case "a":
-				i = 0;
-				break;
-			case "b":
-				i = 1;
-				break;
-			case "c":
-				i = 2;
-				break;
-		}
-				
 		int j = num - 1;
 		
 		if (" ".equals(grid[j][i])) {
@@ -113,17 +112,7 @@ public class ThreeByThreeGrid {
 	}
 	
 	public void changeBox(String abc, int num, String XorO) { //changes a box (remember to check it first)
-		int i = 0;
-		
-		if (abc.equals("a")) {
-			i = 0;
-		}
-		else if (abc.equals("b")) {
-			i = 1;
-		}
-		else if (abc.equals("c")) {
-			i = 2;
-		}
+		int i = columnIndex(abc);
 		
 		int j = num - 1;
 		
