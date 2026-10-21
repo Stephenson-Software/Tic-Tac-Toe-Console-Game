@@ -24,6 +24,7 @@ public class ThreeByThreeGridTest {
 		checkIfThreeOInARow_everyLine();
 		winChecks_ignoreTheOtherMark();
 		winChecks_ignoreMixedLines();
+		checkIfThreeInARow_checksTheGivenMark();
 		checkIfGridFull_onlyWhenNoSpaceIsLeft();
 		columnIndex_mapsEachLetterToItsColumn();
 		unknownColumn_isTreatedAsColumnA();
@@ -126,6 +127,15 @@ public class ThreeByThreeGridTest {
 			grid.changeBox(line[2][0], Integer.valueOf(line[2][1]), "O");
 			check("X X O on " + describe(line) + " is not three X", grid.checkIfThreeXInARow() == false);
 			check("X X O on " + describe(line) + " is not three O", grid.checkIfThreeOInARow() == false);
+		}
+	}
+
+	public static void checkIfThreeInARow_checksTheGivenMark() {
+		for (String[][] line : LINES) {
+			ThreeByThreeGrid grid = new ThreeByThreeGrid();
+			fillLine(grid, line, "X");
+			check("checkIfThreeInARow(\"X\") on " + describe(line), grid.checkIfThreeInARow("X") == true);
+			check("checkIfThreeInARow(\"O\") on X " + describe(line) + " is false", grid.checkIfThreeInARow("O") == false);
 		}
 	}
 
