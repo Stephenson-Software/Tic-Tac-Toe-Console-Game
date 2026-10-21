@@ -32,55 +32,37 @@ public class ThreeByThreeGrid {
 	}
 	
 	public boolean checkIfThreeXInARow() {
-		boolean threeXInRow = false;
-		
-		for (int i = 0; i < 3; i++) {
-			if (grid[i][0].equals("X") && grid[i][1].equals("X") && grid[i][2].equals("X")) {
-				threeXInRow = true;
-			}
-		}
-		
-		for (int j = 0; j < 3; j++) {
-			if (grid[0][j].equals("X") && grid[1][j].equals("X") && grid[2][j].equals("X")) {
-				threeXInRow = true;
-			}
-		}
-		
-		if (grid[0][0].equals("X") && grid[1][1].equals("X") && grid[2][2].equals("X")) {
-			threeXInRow = true;
-		}
-		
-		if (grid[0][2].equals("X") && grid[1][1].equals("X") && grid[2][0].equals("X")) {
-			threeXInRow = true;
-		}
-		
-		return threeXInRow;
+		return checkIfThreeInARow("X");
 	}
 	
 	public boolean checkIfThreeOInARow() {
-		boolean threeOInRow = false;
+		return checkIfThreeInARow("O");
+	}
+	
+	public boolean checkIfThreeInARow(String mark) { // checks every row, column and diagonal for three of the given mark
+		boolean threeInRow = false;
 		
 		for (int i = 0; i < 3; i++) {
-			if (grid[i][0].equals("O") && grid[i][1].equals("O") && grid[i][2].equals("O")) {
-				threeOInRow = true;
+			if (grid[i][0].equals(mark) && grid[i][1].equals(mark) && grid[i][2].equals(mark)) {
+				threeInRow = true;
 			}
 		}
 		
 		for (int j = 0; j < 3; j++) {
-			if (grid[0][j].equals("O") && grid[1][j].equals("O") && grid[2][j].equals("O")) {
-				threeOInRow = true;
+			if (grid[0][j].equals(mark) && grid[1][j].equals(mark) && grid[2][j].equals(mark)) {
+				threeInRow = true;
 			}
 		}
 		
-		if (grid[0][0].equals("O") && grid[1][1].equals("O") && grid[2][2].equals("O")) {
-			threeOInRow = true;
+		if (grid[0][0].equals(mark) && grid[1][1].equals(mark) && grid[2][2].equals(mark)) {
+			threeInRow = true;
 		}
 		
-		if (grid[0][2].equals("O") && grid[1][1].equals("O") && grid[2][0].equals("O")) {
-			threeOInRow = true;
+		if (grid[0][2].equals(mark) && grid[1][1].equals(mark) && grid[2][0].equals(mark)) {
+			threeInRow = true;
 		}
 		
-		return threeOInRow;
+		return threeInRow;
 	}
 	
 	public int columnIndex(String abc) { // translates a column letter to its index within a row; anything else is column a
