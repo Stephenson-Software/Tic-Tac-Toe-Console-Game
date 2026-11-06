@@ -25,8 +25,9 @@ To try it locally, run `./web/build.sh`, serve `build/web` (for example with
 `python3 -m http.server 8000 --directory build/web`) and open <http://localhost:8000>.
 
 The `Browser build` workflow (`.github/workflows/browser.yml`) builds and checks the site on every
-pull request and push, and deploys it to arcade, versioned as `version.txt` plus the commit, on a
-manual run, or on a push to `master` when the repository variable `ARCADE_ENABLED` is `true`.
+pull request, every push to `master` and every manual run. It deploys the site to arcade, versioned
+as `version.txt` plus the commit, on a manual run, or on a push to `master` when the repository
+variable `ARCADE_ENABLED` is `true`.
 
 ## Requirements
 A JDK is required, not just a JRE, since the sources are compiled with `javac`. Java 8
