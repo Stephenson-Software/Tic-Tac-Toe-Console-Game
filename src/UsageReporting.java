@@ -28,7 +28,7 @@ import java.util.Properties;
  * can stop the game: a settings file that cannot be written leaves reporting at its
  * defaults, and the client never throws.
  *
- * Details: https://github.com/Stephenson-Software/trace#usage-reporting
+ * Details: https://danielstephenson.dev/usage-reporting
  */
 public class UsageReporting {
 	/** The name the program key was issued for; the application of every event. */
@@ -38,7 +38,7 @@ public class UsageReporting {
 	static final String DEFAULT_ENDPOINT = "https://trace.danielstephenson.dev";
 	/** The write key issued to this game by trace. It can only add usage events and is not secret. */
 	static final String KEY = "oTgCaEMaZsygwGvVaF9lmfqZw6YA1eRF9UnFwyPrVuQ";
-	static final String DETAILS_URL = "https://github.com/Stephenson-Software/trace#usage-reporting";
+	static final String DETAILS_URL = "https://danielstephenson.dev/usage-reporting";
 	static final String SETTINGS_FILE_NAME = "usage-reporting.properties";
 	static final String ENABLED_KEY = "enabled";
 	static final String ENDPOINT_KEY = "endpoint";

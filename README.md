@@ -121,7 +121,7 @@ Every switch fails closed. `enabled` keeps reporting on only when it is `true`, 
 
 The key in `src/UsageReporting.java` is the write key issued to this game; it can only add usage events and is not secret. The CI workflow sets `TRACE_USAGE_REPORTING=off`, so a CI run never reports.
 
-Details on what trace collects and why: https://github.com/Stephenson-Software/trace#usage-reporting
+Details on what trace collects and why: https://danielstephenson.dev/usage-reporting
 
 ## License
 This project is released under the Stephenson Software Non-Commercial License. See
