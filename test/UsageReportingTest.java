@@ -21,6 +21,9 @@ public class UsageReportingTest {
 		enabledBy_onlyAnOnValueOrAMissingLineKeepsReportingOn();
 		start_respectsAnOptOutInTheSettingsFileAndKeepsIt();
 		start_withAnUnreadableSettingsFileReportsNothing();
+		enabledBy_anOptOutWrittenUnderANearMissNameIsAnOptOut();
+		enabledBy_nearMissNamesThatSayOnAreNotAnOptOut();
+		start_respectsANearMissOptOutAndKeepsIt();
 
 		if (failures > 0) {
 			System.out.println(failures + " check(s) failed");
@@ -83,5 +86,42 @@ public class UsageReportingTest {
 		reporting.close();
 		check("an unreadable settings file reports nothing", reporting.isEnabled() == false);
 		check("an unreadable settings file is left alone", file.isDirectory());
+	}
+
+	static Properties load(String contents) throws IOException {
+		Properties settings = new Properties();
+		settings.load(new java.io.StringReader(contents));
+		return settings;
+	}
+
+	public static void enabledBy_anOptOutWrittenUnderANearMissNameIsAnOptOut() throws IOException {
+		// Each used to be ignored, leaving the missing enabled line's default (on) in charge.
+		for (String nearMiss : new String[] {"enable=false\n", "Enabled=false\n", "ENABLED=off\n",
+				"disabled=true\n", "disable=yes\n", "enabled=true\ndisabled=true\n",
+				"usage_reporting.enabled=false\n", "usage-reporting=false\n", "usageReporting=no\n"}) {
+			check(nearMiss.trim() + " is off", UsageReporting.enabledBy(load(nearMiss)) == false);
+		}
+	}
+
+	public static void enabledBy_nearMissNamesThatSayOnAreNotAnOptOut() throws IOException {
+		for (String on : new String[] {"enabled=true\nenable=yes\n", "enabled=true\ndisabled=false\n",
+				"Enabled=true\n", "usage-reporting=on\n", "endpoint=http://127.0.0.1:9\n", ""}) {
+			check(on.trim() + " is on", UsageReporting.enabledBy(load(on)) == true);
+		}
+	}
+
+	public static void start_respectsANearMissOptOutAndKeepsIt() throws IOException {
+		File dir = Files.createTempDirectory("ttt-usage").toFile();
+		File file = new File(dir, UsageReporting.SETTINGS_FILE_NAME);
+		String contents = "enable=false\n";
+		try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
+			writer.write(contents);
+		}
+		UsageReporting reporting = new UsageReporting(file);
+		reporting.start();
+		reporting.close();
+		check("enable=false in the file reports nothing", reporting.isEnabled() == false);
+		check("enable=false is left as written",
+				contents.equals(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8)));
 	}
 }
