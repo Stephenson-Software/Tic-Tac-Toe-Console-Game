@@ -22,11 +22,13 @@ import java.util.Properties;
  * file (~/.config/tic-tac-toe-console-game/usage-reporting.properties, written with its
  * defaults, alongside a one-line notice, the first time the game reports), or with the
  * environment variables every trace client honours, TRACE_USAGE_REPORTING=off and
- * DO_NOT_TRACK=1, which the client checks before the settings file. Nothing in here
- * can stop the game: a settings file that cannot be read or written leaves reporting
- * at its defaults, and the client never throws.
+ * DO_NOT_TRACK=1, which the client checks before the settings file. Every switch fails
+ * closed: enabled keeps reporting on only when it is true, on, yes or 1 (or missing), and
+ * a settings file that is there but cannot be read turns reporting off. Nothing in here
+ * can stop the game: a settings file that cannot be written leaves reporting at its
+ * defaults, and the client never throws.
  *
- * Details: https://github.com/Stephenson-Software/trace#usage-reporting
+ * Details: https://danielstephenson.dev/usage-reporting
  */
 public class UsageReporting {
 	/** The name the program key was issued for; the application of every event. */
@@ -36,7 +38,7 @@ public class UsageReporting {
 	static final String DEFAULT_ENDPOINT = "https://trace.danielstephenson.dev";
 	/** The write key issued to this game by trace. It can only add usage events and is not secret. */
 	static final String KEY = "oTgCaEMaZsygwGvVaF9lmfqZw6YA1eRF9UnFwyPrVuQ";
-	static final String DETAILS_URL = "https://github.com/Stephenson-Software/trace#usage-reporting";
+	static final String DETAILS_URL = "https://danielstephenson.dev/usage-reporting";
 	static final String SETTINGS_FILE_NAME = "usage-reporting.properties";
 	static final String ENABLED_KEY = "enabled";
 	static final String ENDPOINT_KEY = "endpoint";
@@ -70,12 +72,17 @@ public class UsageReporting {
 	public void start() {
 		boolean firstRun = settingsFile != null && !settingsFile.exists();
 		Properties settings = readSettings();
+		// A settings file that is there but cannot be read may say enabled=false: count it as off.
+		boolean unreadable = settings == null;
+		if (unreadable) {
+			settings = new Properties();
+		}
 		try {
 			// -Dusage-reporting.endpoint=... points a run at a local stub without touching the file.
 			String endpoint = System.getProperty("usage-reporting.endpoint", settings.getProperty(ENDPOINT_KEY, DEFAULT_ENDPOINT));
 			client = TraceClient.builder(endpoint.trim(), APPLICATION, VERSION)
 					.key(KEY)
-					.enabled(!"false".equalsIgnoreCase(settings.getProperty(ENABLED_KEY, "true").trim()))
+					.enabled(!unreadable && enabledBy(settings))
 					// Resolved by the client only once it knows reporting is on.
 					.installId(TraceInstallId.fromEnvironment())
 					.installIdFile(installIdFile())
@@ -91,6 +98,15 @@ public class UsageReporting {
 			writeDefaultSettings();
 		}
 		client.report("startup");
+	}
+
+	/**
+	 * Whether the settings allow reporting. Fails closed through the client's helper: a
+	 * missing enabled line keeps the default (on), but once the line is there only true, on,
+	 * yes or 1 keep reporting on, so false, off, no, 0, a blank value or a typo turn it off.
+	 */
+	static boolean enabledBy(Properties settings) {
+		return TraceClient.allowsReporting(settings.getProperty(ENABLED_KEY, "true"));
 	}
 
 	/** Reports that a game ended with the given result: "won", "lost" or "tie". */
@@ -114,6 +130,7 @@ public class UsageReporting {
 				+ ", or with TRACE_USAGE_REPORTING=off in the environment. Details: " + DETAILS_URL;
 	}
 
+	/** The settings; empty when there is no file yet, null when the file cannot be read. */
 	private Properties readSettings() {
 		Properties settings = new Properties();
 		if (settingsFile == null) {
@@ -125,7 +142,8 @@ public class UsageReporting {
 		try (InputStream in = new FileInputStream(settingsFile)) {
 			settings.load(in);
 		} catch (IOException | RuntimeException unreadable) {
-			// Reporting keeps its defaults; the game is never affected.
+			// Reporting is off until the file can be read; the game is never affected.
+			return null;
 		}
 		return settings;
 	}

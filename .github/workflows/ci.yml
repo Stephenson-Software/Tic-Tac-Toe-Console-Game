@@ -26,6 +26,11 @@ jobs:
           javac -d out src/*.java test/*.java
           java -cp out ThreeByThreeGridTest
 
+      # Checks that the usage-reporting switch fails closed: off, no, 0, a blank value or
+      # an unreadable settings file all turn reporting off. Nothing is sent anywhere.
+      - name: Check the usage-reporting switch
+        run: java -cp out UsageReportingTest
+
       # X is fed every space in board order. Each token is either played (the space is
       # free) or rejected with "That space is taken!" (the computer took it), so after at
       # most nine tokens every space has been visited and the board is full. The game
