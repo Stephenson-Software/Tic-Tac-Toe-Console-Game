@@ -106,7 +106,41 @@ public class UsageReporting {
 	 * yes or 1 keep reporting on, so false, off, no, 0, a blank value or a typo turn it off.
 	 */
 	static boolean enabledBy(Properties settings) {
-		return TraceClient.allowsReporting(settings.getProperty(ENABLED_KEY, "true"));
+		return TraceClient.allowsReporting(settings.getProperty(ENABLED_KEY, "true"))
+				&& !hasNearMissOptOut(settings);
+	}
+
+	/**
+	 * Whether the settings hold an attempt to turn reporting off that is not written exactly as
+	 * enabled=. Such a line used to be ignored, so with the enabled line missing reporting
+	 * stayed on. A user who wrote any of these did not ask for reporting, so each counts as off:
+	 * a key that spells "enabled" another way (enable, Enabled, usage_reporting.enabled, ...)
+	 * whose value is not clearly on; one that spells "disabled" (disabled, disable, ...) whose
+	 * value is on; and usage_reporting= (any spelling) given a value that is not clearly on.
+	 */
+	static boolean hasNearMissOptOut(Properties settings) {
+		for (String key : settings.stringPropertyNames()) {
+			if (key.equals(ENABLED_KEY)) {
+				continue; // the switch itself
+			}
+			String name = normalise(key);
+			String value = settings.getProperty(key);
+			if (name.contains("disabl")) {
+				if (TraceClient.allowsReporting(value)) {
+					return true;
+				}
+			} else if (name.contains("enabl") || name.endsWith("usagereporting")) {
+				if (!TraceClient.allowsReporting(value)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/** The key in lower case with everything but letters and digits dropped. */
+	private static String normalise(String key) {
+		return key.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9]", "");
 	}
 
 	/** Reports that a game ended with the given result: "won", "lost" or "tie". */

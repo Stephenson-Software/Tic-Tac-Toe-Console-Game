@@ -117,7 +117,7 @@ To turn it off, any one of these is enough:
 - `TRACE_USAGE_REPORTING=off` in the environment — the switch every trace client honours, checked before the settings file
 - `DO_NOT_TRACK=1` in the environment, per [consoledonottrack.com](https://consoledonottrack.com)
 
-Every switch fails closed. `enabled` keeps reporting on only when it is `true`, `on`, `yes` or `1` (or the line is missing); `false`, `off`, `no`, `0`, a blank value or a typo turn it off, and so does a settings file that is there but cannot be read. `TRACE_USAGE_REPORTING` set to anything but blank, `true`, `on`, `yes` or `1` turns reporting off, and so does `DO_NOT_TRACK` set to anything but blank, `0`, `false`, `off` or `no`. The game never rewrites an existing settings file.
+Every switch fails closed. `enabled` keeps reporting on only when it is `true`, `on`, `yes` or `1` (or the line is missing); `false`, `off`, `no`, `0`, a blank value or a typo turn it off, and so does a settings file that is there but cannot be read. `TRACE_USAGE_REPORTING` set to anything but blank, `true`, `on`, `yes` or `1` turns reporting off, and so does `DO_NOT_TRACK` set to anything but blank, `0`, `false`, `off` or `no`. The game never rewrites an existing settings file. Other spellings count as off too: `enable=false`, `Enabled=false`, `usage_reporting.enabled=false` or `usage-reporting=false`, and `disabled=true`, even next to `enabled=true`.
 
 The key in `src/UsageReporting.java` is the write key issued to this game; it can only add usage events and is not secret. The CI workflow sets `TRACE_USAGE_REPORTING=off`, so a CI run never reports.
 
