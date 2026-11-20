@@ -47,17 +47,21 @@ committed.
 
 ## Testing
 The rules of the board — every winning line, the tie condition, and how a column
-letter and row number pick a space — are checked by `test/ThreeByThreeGridTest.java`,
-a plain class with no test framework. It is compiled together with the sources and
-run directly, and exits with a non-zero status if any check fails:
+letter and row number pick a space — are checked by `test/ThreeByThreeGridTest.java`.
+The usage-reporting switch — that every opt-out, including a near-miss spelling or
+an unreadable settings file, turns reporting off and is left as written — is checked
+by `test/UsageReportingTest.java`, which sends nothing anywhere. Both are plain
+classes with no test framework. They are compiled together with the sources and
+run directly, and each exits with a non-zero status if any check fails:
 
 ```
 javac -d out src/*.java test/*.java
 java -cp out ThreeByThreeGridTest
+java -cp out UsageReportingTest
 ```
 
 The GitHub Actions workflow in `.github/workflows/ci.yml` runs on every push to
-`master` and every pull request. It runs the build command above, then these two
+`master` and every pull request. It runs the build command above, then these three
 commands, and then plays three bounded games
 from piped input: a smoke test, one that checks an uppercase move is played in the
 right column and that malformed moves are rejected rather than crashing the game, and
@@ -100,7 +104,7 @@ The game ends as soon as a line of three is completed or the board fills, and on
   or by ending input — `Ctrl+D`, or a piped script running out of moves — which prints
   `Input ended before the game was finished.` and exits normally. A game left that way
   has no result, so no `game-finished` usage event is sent for it.
-- Only `ThreeByThreeGrid` has automated tests. `TicTacToe` reads from `System.in`
+- Only `ThreeByThreeGrid` and `UsageReporting` have automated tests. `TicTacToe` reads from `System.in`
   and moves with an unseeded `Random`, so it is checked only by the CI games, which
   verify that a game runs to a result line, how move input is parsed, and that
   running out of input ends a game cleanly — not which moves the computer makes or
