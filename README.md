@@ -40,14 +40,14 @@ letters and row numbers beside them.
   (the winning line lit), and a click or tap anywhere on the board presses Enter for the next game.
 - Typing still works in 3D: the text field and Enter button are unchanged, and the tile a typed
   move names is lit while it is typed. The board takes no keys of its own.
-- 3D is the default where it can run. The relay's module (about 1.3 MB) is downloaded only when
+- 3D is the default where it can run. The relay's module (about 1.2 MB) is downloaded only when
   the 3D board is wanted, only when it fits a 4 MB limit, and only where the browser has WebGL 2;
   otherwise the page stays text only and says why under the console. The `3D board` button hides
   and shows it (remembered on the device), and `?view=2d` or `?view=3d` in the address picks one
   for a visit; `?view=2d` never downloads the relay.
 - On a phone the board sits above the console, full width, and taps play it.
 
-`web/fetch-strata.sh` downloads Strata 0.9.1's `strata-0.9.1-wasm32-emscripten.tar.gz`, checks it
+`web/fetch-strata.sh` downloads Strata 0.10.0's `strata-0.10.0-wasm32-emscripten.tar.gz`, checks it
 against the release's `SHA256SUMS`, and copies `kit/grid-relay/dist/`'s five files and Strata's
 MIT `LICENSE` into `build/strata/` (kept between builds). `STRATA_DOWNLOADS=<dir>` takes the
 download and `SHA256SUMS` from a directory instead, for building offline.
