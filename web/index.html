@@ -79,6 +79,56 @@
   }
   button:disabled, #move:disabled { opacity: 0.5; cursor: default; }
   .hint { color: var(--muted); font-size: 0.9rem; margin: 8px 0 0; }
+
+  /* the 3D board (board3d.js): Strata's grid relay on a square canvas beside
+     the console; hidden, and the console alone, when it is off or can't run */
+  main:has(#play.with-board) { max-width: 1000px; }
+  #play.with-board {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  @media (min-width: 820px) {
+    #play.with-board { grid-template-columns: minmax(300px, 420px) minmax(0, 1fr); align-items: start; }
+  }
+  #board3d {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    margin: 0 auto;
+    aspect-ratio: 1 / 1;
+    background: #1a1f29;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  #board3d[hidden] { display: none; }
+  #relay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+  }
+  @media (max-width: 819px) {
+    #play.with-board #terminal { height: 240px; }
+  }
+  .view-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: 12px;
+  }
+  #view3d {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    font-size: 0.9rem;
+  }
+  #view3d[aria-pressed="true"] { border-color: var(--accent); }
+  #view3d-note { color: var(--muted); font-size: 0.9rem; }
   footer {
     margin-top: 32px;
     padding-top: 12px;
@@ -95,6 +145,11 @@
   <h1>Tic Tac Toe</h1>
   <p class="lede">The original Java console game, unchanged, running in your browser. You are X and move first.</p>
 
+  <section id="play">
+  <div id="board3d" hidden>
+    <canvas id="relay" aria-hidden="true"></canvas>
+  </div>
+  <div class="console">
   <pre id="terminal" aria-live="polite">Loading Java (the first visit downloads the runtime, which can take a little while)...
 </pre>
 
@@ -104,7 +159,14 @@
            placeholder="Your move, like a1 or B2" aria-label="Your move" disabled>
     <button id="send" type="submit" disabled>Enter</button>
   </form>
-  <p class="hint">A move is a column letter and a row number: a1 is the top-left space, b2 the center, c3 the bottom-right.</p>
+  <p class="hint">A move is a column letter and a row number: a1 is the top-left space, b2 the center, c3 the bottom-right.
+    On the 3D board, a click or tap on a space types its move here for you.</p>
+  <div class="view-row">
+    <button id="view3d" type="button" aria-pressed="false">3D board</button>
+    <span id="view3d-note" role="status"></span>
+  </div>
+  </div>
+  </section>
 
   <footer>
     <p>Runs in your browser with <a href="https://cheerpj.com" target="_blank" rel="noopener">CheerpJ (Leaning Technologies)</a>.</p>
@@ -114,6 +176,13 @@
 </main>
 
 <script src="https://cjrtnc.leaningtech.com/4.3/loader.js"></script>
+<!-- the 3D board: Strata's grid relay (strata/, fetched by web/fetch-strata.sh). These
+     scripts are small; the relay's module is downloaded only when the 3D board is wanted. -->
+<script src="strata/strata-loader.js"></script>
+<script src="strata/strata-kit.js"></script>
+<script src="strata/grid-relay.js"></script>
+<script src="board3d-scene.js"></script>
+<script src="board3d.js"></script>
 <script>
   (function () {
     var terminal = document.getElementById("terminal");
@@ -124,6 +193,7 @@
     var loaded = false;
     var queuedLines = [];   // lines submitted before Java asked for one
     var waiting = null;     // resolves the pending readLine() call
+    var output = "";        // what the game has printed (not the echoed input), for the 3D board
 
     function append(text) {
       if (!loaded) {
@@ -150,12 +220,13 @@
 
     async function Java_BrowserMain_write(lib, text) {
       append(text);
+      output = (output + text).slice(-4096);
+      if (window.TicTacToe3D) window.TicTacToe3D.output(output);
     }
 
-    form.addEventListener("submit", function (event) {
-      event.preventDefault();
-      var line = input.value;
-      input.value = "";
+    // One line for the game's System.in, echoed to the terminal: what the Enter
+    // button sends, and what a click or tap on the 3D board types.
+    function typeLine(line) {
       append(line + "\n");
       if (waiting) {
         var resolve = waiting;
@@ -164,8 +235,27 @@
       } else {
         queuedLines.push(line);
       }
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      var line = input.value;
+      input.value = "";
+      if (window.TicTacToe3D) window.TicTacToe3D.typed("");
+      typeLine(line);
       input.focus();
     });
+
+    input.addEventListener("input", function () {
+      if (window.TicTacToe3D) window.TicTacToe3D.typed(input.value);
+    });
+
+    if (window.TicTacToe3D) {
+      window.TicTacToe3D.init({
+        canType: function () { return !input.disabled; },
+        type: function (line) { typeLine(line); return true; },
+      });
+    }
 
     async function start() {
       try {

@@ -30,6 +30,35 @@ jobs:
           grep -Fq 'https://cjrtnc.leaningtech.com/' build/web/index.html
           grep -Fq 'https://cheerpj.com' build/web/index.html
           grep -Fq 'https://danielstephenson.dev/play' build/web/index.html
+          # the 3D board: its scripts, and Strata's grid relay from web/fetch-strata.sh
+          test -s build/web/board3d.js
+          test -s build/web/board3d-scene.js
+          for f in grid-relay-scene.js grid-relay-scene.wasm grid-relay.js strata-kit.js strata-loader.js LICENSE; do
+            test -s "build/web/strata/$f"
+          done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Check the 3D board's scene (web/test)
+        run: node --test web/test/*.test.cjs
+
+      - name: Play the site in headless Chromium, in 3D and text only (web/e2e/board3d.cjs)
+        run: |
+          mkdir -p "$RUNNER_TEMP/e2e" && cd "$RUNNER_TEMP/e2e"
+          npm install --no-save --no-package-lock playwright@1.65.1
+          npx playwright install --with-deps chromium
+          NODE_PATH="$RUNNER_TEMP/e2e/node_modules" node "$GITHUB_WORKSPACE/web/e2e/board3d.cjs" \
+            "$GITHUB_WORKSPACE/build/web" "$RUNNER_TEMP/e2e/shots"
+
+      - name: Keep the browser screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: board3d
+          path: ${{ runner.temp }}/e2e/shots
+          if-no-files-found: ignore
 
       - name: Write the deploy version
         id: version
