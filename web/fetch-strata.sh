@@ -12,7 +12,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-STRATA_VERSION=0.9.0
+STRATA_VERSION=0.9.1
 asset="strata-$STRATA_VERSION-wasm32-emscripten.tar.gz"
 files="grid-relay-scene.js grid-relay-scene.wasm grid-relay.js strata-kit.js strata-loader.js"
 dest=${1:-build/strata}
