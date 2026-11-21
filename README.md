@@ -17,14 +17,65 @@ The browser build lives in `web/`:
   functions on the page, then plays `TicTacToe` unchanged, offering a new game after each result.
   It does not start usage reporting, so the browser build never reports.
 - `web/index.html` shows the game's output, and a text field with an Enter button feeds each move
-  to `System.in`.
+  to `System.in`. Beside them is the 3D board (below).
 - `web/build.sh` compiles `src/` and `BrowserMain` with `--release 8` (CheerpJ's default Java
-  runtime is Java 8) into `build/web/tic-tac-toe.jar`, and copies the page next to it.
+  runtime is Java 8) into `build/web/tic-tac-toe.jar`, and copies the page, the 3D board's two
+  scripts and Strata's grid relay (`build/web/strata/`, from `web/fetch-strata.sh`) next to it.
+
+### The 3D board
+
+![The browser build at the end of a game: the 3D board beside the console, the result on a card above the board, and the console's own board and result line in the terminal](docs/images/browser-3d.png)
+
+The console stays the game. Beside it, the page shows the board in 3D, drawn by
+[Strata](https://github.com/Preponderous-Software/strata)'s grid relay: nine tiles in a frame,
+each `X` a red cross of blocks and each `O` a ring of blue beads, with the console's column
+letters and row numbers beside them.
+
+- The 3D board only mirrors the game: `web/board3d-scene.js` reads the last board the game
+  printed (and any result line after it) from the game's output, never from what was typed.
+- A click or tap on a tile types that space's move (`a1` to `c3`) into the console, through the
+  same path as the text field's Enter button, and echoes it in the terminal. Every move therefore
+  still goes through the game's own input: a taken space is refused with `That space is taken!`
+  exactly as if it had been typed. After a result, the board shows it on a card above the tiles
+  (the winning line lit), and a click or tap anywhere on the board presses Enter for the next game.
+- Typing still works in 3D: the text field and Enter button are unchanged, and the tile a typed
+  move names is lit while it is typed. The board takes no keys of its own.
+- 3D is the default where it can run. The relay's module (about 1.3 MB) is downloaded only when
+  the 3D board is wanted, only when it fits a 4 MB limit, and only where the browser has WebGL 2;
+  otherwise the page stays text only and says why under the console. The `3D board` button hides
+  and shows it (remembered on the device), and `?view=2d` or `?view=3d` in the address picks one
+  for a visit; `?view=2d` never downloads the relay.
+- On a phone the board sits above the console, full width, and taps play it.
+
+`web/fetch-strata.sh` downloads Strata 0.9.0's `strata-0.9.0-wasm32-emscripten.tar.gz`, checks it
+against the release's `SHA256SUMS`, and copies `kit/grid-relay/dist/`'s five files and Strata's
+MIT `LICENSE` into `build/strata/` (kept between builds). `STRATA_DOWNLOADS=<dir>` takes the
+download and `SHA256SUMS` from a directory instead, for building offline.
 
 To try it locally, run `./web/build.sh`, serve `build/web` (for example with
 `python3 -m http.server 8000 --directory build/web`) and open <http://localhost:8000>.
 
-The `Browser build` workflow (`.github/workflows/browser.yml`) builds and checks the site on every
+The 3D board's scene is checked under Node's own test runner (no dependencies), against the game's
+real output: reading boards and results from it, the move typed for each tile, picking the tile
+under a press at desktop and phone sizes, and the relay messages:
+
+```
+node --test web/test/*.test.cjs
+```
+
+`web/e2e/board3d.cjs` plays the built site in headless Chromium with the real Java game under
+CheerpJ and the real relay (WebGL 2 on SwiftShader), at a desktop size and on a phone (390 x 844,
+touch): clicks and taps play games to a result, a taken tile is refused by the game, typing still
+plays, the board button hides and shows the board mid-game, `?view=2d` never downloads it, and a
+browser without WebGL 2 stays text only and says why:
+
+```
+npm install --no-save playwright && npx playwright install chromium
+node web/e2e/board3d.cjs build/web <screenshot directory>
+```
+
+The `Browser build` workflow (`.github/workflows/browser.yml`) builds and checks the site, runs
+both of these, on every
 pull request, every push to `master` and every manual run. It deploys the site to arcade, versioned
 as `version.txt` plus the commit, on a manual run, or on a push to `master` when the repository
 variable `ARCADE_ENABLED` is `true`.
