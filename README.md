@@ -47,7 +47,7 @@ letters and row numbers beside them.
   for a visit; `?view=2d` never downloads the relay.
 - On a phone the board sits above the console, full width, and taps play it.
 
-`web/fetch-strata.sh` downloads Strata 0.9.0's `strata-0.9.0-wasm32-emscripten.tar.gz`, checks it
+`web/fetch-strata.sh` downloads Strata 0.9.1's `strata-0.9.1-wasm32-emscripten.tar.gz`, checks it
 against the release's `SHA256SUMS`, and copies `kit/grid-relay/dist/`'s five files and Strata's
 MIT `LICENSE` into `build/strata/` (kept between builds). `STRATA_DOWNLOADS=<dir>` takes the
 download and `SHA256SUMS` from a directory instead, for building offline.
